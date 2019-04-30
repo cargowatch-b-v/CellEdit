@@ -37,9 +37,6 @@ jQuery.fn.dataTable.Api.register('MakeCellsEditable()', function (settings) {
             // Update
             var newValue = inputField.val();
 
-            // ---------------
-            // BEGIN CW-CHANGE
-            // ---------------
             // Set to text of selected option instead of val for our usage of value
             // in case of inputfield is a select element
             if(inputField.is('select')) {
@@ -73,9 +70,6 @@ jQuery.fn.dataTable.Api.register('MakeCellsEditable()', function (settings) {
             else {
                 _update(newText, newValue);
             }
-            // -------------
-            // END CW-CHANGE
-            // -------------
             function _addValidationCss() {
                 // Show validation error
                 if (settings.allowNulls.errorClass) {
@@ -84,9 +78,6 @@ jQuery.fn.dataTable.Api.register('MakeCellsEditable()', function (settings) {
                     $(inputField).css({ "border": "red solid 1px" });
                 }
             }
-            // ---------------
-            // BEGIN CW-CHANGE
-            // ---------------
             function _update(newText, newValue) {
                 var oldValue = cell.data();
                 // NOTE BY WESSEL: 7/8/2018
@@ -107,9 +98,6 @@ jQuery.fn.dataTable.Api.register('MakeCellsEditable()', function (settings) {
                     }
                 }
                 cell.data(newText);
-                // -------------
-                // END CW-CHANGE
-                // -------------
                 //Return cell & row.
                 settings.onUpdate(cell, row, oldValue);
             }
@@ -138,9 +126,8 @@ jQuery.fn.dataTable.Api.register('MakeCellsEditable()', function (settings) {
     }
 
     if (table != null) {
-        // On cell click
-        $(table.body()).on('click', 'td', function () {
-
+        // On cell double-click
+        $(table.body()).on('dblclick', 'td', function () {
             var currentColumnIndex = table.cell(this).index().column;
 
             // DETERMINE WHAT COLUMNS CAN BE EDITED
@@ -304,6 +291,6 @@ function sanitizeCellValue(cellValue) {
     // -------------
     // END CW-CHANGE
     // -------------
-    
+
     return cellValue;
 }
