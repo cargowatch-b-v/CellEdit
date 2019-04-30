@@ -36,30 +36,46 @@ jQuery.fn.dataTable.Api.register('MakeCellsEditable()', function (settings) {
 
             // Update
             var newValue = inputField.val();
-            if (!newValue && ((settings.allowNulls) && settings.allowNulls != true)) {
+
+            // ---------------
+            // BEGIN CW-CHANGE
+            // ---------------
+            // Set to text of selected option instead of val for our usage of value
+            // in case of inputfield is a select element
+            if(inputField.is('select')) {
+                var newText = inputField[0].options[inputField[0].selectedIndex].text;
+            }
+            else {
+                var newText = inputField.val();
+            }
+
+            if (!newText && ((settings.allowNulls) && settings.allowNulls != true)) {
                 // If columns specified
                 if (settings.allowNulls.columns) {
                     // If current column allows nulls
                     if (settings.allowNulls.columns.indexOf(columnIndex) > -1) {
-                        _update(newValue);
+                        _update(newText, newValue);
                     } else {
                         _addValidationCss();
                     }
                     // No columns allow null
-                } else if (!newValue) {
+                } else if (!newText) {
                     _addValidationCss();
                 }
                 //All columns allow null
             } else if (newValue && settings.onValidate) {
                 if (settings.onValidate(cell, row, newValue)) {
-                    _update(newValue);
+                    _update(newText, newValue);
                 } else {
                     _addValidationCss();
                 }
             }
             else {
-                _update(newValue);
+                _update(newText, newValue);
             }
+            // -------------
+            // END CW-CHANGE
+            // -------------
             function _addValidationCss() {
                 // Show validation error
                 if (settings.allowNulls.errorClass) {
@@ -68,9 +84,32 @@ jQuery.fn.dataTable.Api.register('MakeCellsEditable()', function (settings) {
                     $(inputField).css({ "border": "red solid 1px" });
                 }
             }
-            function _update(newValue) {
+            // ---------------
+            // BEGIN CW-CHANGE
+            // ---------------
+            function _update(newText, newValue) {
                 var oldValue = cell.data();
-                cell.data(newValue);
+                // NOTE BY WESSEL: 7/8/2018
+                // We check whether we came from the actions table. 
+                // If this is the case we need to select the correct
+                // values for the dropdown menu.
+                if(row.data().reasonid !== undefined){ // We are in the actions table
+                    if(columnIndex === 2) {
+                        row.data().statusid = newValue;
+                    }
+                    if(columnIndex === 3) {
+                        row.data().reasonid = newValue;
+                    }          
+                } else { //we are in the cwinvoices table.
+                    if(columnIndex === 3) { 
+                        row.data().invoicetypeid = newValue;
+                        cell.data(newText);
+                    }
+                }
+                cell.data(newText);
+                // -------------
+                // END CW-CHANGE
+                // -------------
                 //Return cell & row.
                 settings.onUpdate(cell, row, oldValue);
             }
@@ -255,5 +294,16 @@ function sanitizeCellValue(cellValue) {
         // escape single quote
         cellValue = cellValue.replace(/'/g, "&#39;");
     }
+
+    // ---------------
+    // BEGIN CW-CHANGE
+    // ---------------
+    // Clear of html tags
+    var regex = /(<([^>]+)>)/ig,
+    cellValue = cellValue.replace(regex, "");
+    // -------------
+    // END CW-CHANGE
+    // -------------
+    
     return cellValue;
 }
